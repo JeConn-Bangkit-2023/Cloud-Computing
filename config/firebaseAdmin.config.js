@@ -18,5 +18,13 @@ const serviceAccount = {
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: process.env.DATABASE_URL
+    databaseURL: process.env.DATABASE_URL,
+    storageBucket: process.env.STORAGE_BUCKET
 });
+
+const realtime = admin.database();
+const storage = admin.storage().bucket();
+
+
+
+module.exports = { realtime, storage };
