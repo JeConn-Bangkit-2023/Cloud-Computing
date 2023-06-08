@@ -49,7 +49,7 @@ app.get('/publicData/:username', (req, res) => {
 });
 
 
-// POST /publicData
+// POST /publicData/newUser
 app.post('/publicData/newUser', (req, res) => {
     const { username, full_name, profile_image_url } = req.body;
     const newData = {
@@ -69,7 +69,7 @@ app.post('/publicData/newUser', (req, res) => {
 });
 
 
-// PUT /publicData/:username
+// PUT /publicData/updateProfileUser/:username
 app.put('/publicData/updateProfileUser/:username', upload.single('profile_image'), (req, res) => {
     const { username } = req.params;
     const profileImageFile = req.file;
@@ -125,13 +125,14 @@ app.delete('/publicData/:username', (req, res) => {
 
     publicData_db.child(username).remove()
         .then(() => {
-            res.send('Data deleted successfully');
+            res.status(200).send('200');
         })
         .catch((error) => {
             console.error(error);
-            res.status(500).send('Internal Server Error');
+            res.status(500).send('500');
         });
 });
+
 
 
 
