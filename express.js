@@ -1,8 +1,10 @@
 const { realtime, storage } = require('./config/firebaseAdmin.config.js');
 
 const publicData_db = require('./databases/realtime.rtdb.js').publicData_db;
+const messageRooms_db = require('./databases/realtime.rtdb.js').messageRooms_db;
 const profileImage = require('./storages/storage.gs.js').profileImage;
 const postImage = require('./storages/storage.gs.js').postImage;
+const messageImage = require('./storages/storage.gs.js').messageImage;
 
 const express = require('express');
 const cors = require('cors');
@@ -28,11 +30,22 @@ app.get('/publicData', (req, res) => {
     publicData_db.once('value', (snapshot) => {
         const data = snapshot.val();
         res.json(data);
-    }
-        , (error) => {
-            console.error(error);
-            res.status(500).send('500');
-        });
+    }, (error) => {
+        console.error(error);
+        res.status(500).send('500');
+    });
+});
+
+
+// GET /messageRooms
+app.get('/messageRooms', (req, res) => {
+    messageRooms_db.once('value', (snapshot) => {
+        const data = snapshot.val();
+        res.json(data);
+    }, (error) => {
+        console.error(error);
+        res.status(500).send('500');
+    });
 });
 
 
@@ -50,23 +63,17 @@ app.get('/publicData/:username', (req, res) => {
 });
 
 
-// POST /publicData/newUser
-app.post('/publicData/newUser', (req, res) => {
-    const { username, full_name, profile_image_url } = req.body;
-    const newData = {
-        full_name: full_name,
-        username: username,
-        profile_image_url: profile_image_url
-    };
+// GET /messageRooms/:messageRoomId
+app.get('/messageRooms/:messageRoomId', (req, res) => {
+    const messageRoomId = req.params.messageRoomId;
 
-    publicData_db.child(username).set(newData)
-        .then(() => {
-            res.status(201).send('201');
-        })
-        .catch((error) => {
-            console.error(error);
-            res.status(500).send('500');
-        });
+    messageRooms_db.child(messageRoomId).once('value', (snapshot) => {
+        const data = snapshot.val();
+        res.json(data);
+    }, (error) => {
+        console.error(error);
+        res.status(500).send('500');
+    });
 });
 
 
@@ -110,6 +117,60 @@ app.post('/publicData/:username/jobInformation/imagesUrl', upload.single('image'
         };
 
         publicData_db.child(username).child('jobInformation').child('imagesUrl').child(uid).set(newPostImage)
+            .then(() => {
+                res.status(201).send('201');
+            })
+            .catch((error) => {
+                console.error(error);
+                res.status(500).send('500');
+            });
+    });
+
+    blobStream.end(imageFile.buffer);
+});
+
+
+// POST /messageRooms/:roomId/messages/:username
+app.post('/messageRooms/:roomId/messages/:username', upload.single('image'), (req, res) => {
+    const { roomId, username } = req.params;
+    const imageFile = req.file;
+    const allowedImageTypes = ['image/jpeg', 'image/png'];
+
+    if (!imageFile) {
+        return res.status(400).send('400');
+    }
+
+    if (!allowedImageTypes.includes(imageFile.mimetype)) {
+        return res.status(400).send('400');
+    }
+
+    const timestamp = Date.now();
+    const imagePath = `message_image/${roomId}/${timestamp}-${imageFile.originalname}`;
+
+    const fileUpload = storage.file(imagePath);
+    const blobStream = fileUpload.createWriteStream({
+        metadata: {
+            contentType: imageFile.mimetype
+        }
+    });
+
+    blobStream.on('error', (error) => {
+        console.error(error);
+        res.status(500).send('500');
+    });
+
+    blobStream.on('finish', () => {
+        const imageUrl = `https://storage.googleapis.com/${storage.name}/${imagePath}`;
+
+        const uid = String(timestamp);
+
+        const newMessageImage = {
+            date: timestamp,
+            image_url: imageUrl,
+            username: username
+        };
+
+        messageRooms_db.child(roomId).child('messages').child(uid).set(newMessageImage)
             .then(() => {
                 res.status(201).send('201');
             })
@@ -170,21 +231,6 @@ app.put('/publicData/updateProfileUser/:username', upload.single('profile_image'
     });
 
     blobStream.end(profileImageFile.buffer);
-});
-
-
-// DELETE /publicData/:username
-app.delete('/publicData/:username', (req, res) => {
-    const username = req.params.username;
-
-    publicData_db.child(username).remove()
-        .then(() => {
-            res.status(200).send('200');
-        })
-        .catch((error) => {
-            console.error(error);
-            res.status(500).send('500');
-        });
 });
 
 
