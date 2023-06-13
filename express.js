@@ -1,7 +1,7 @@
 const { realtime, storage } = require('./config/firebaseAdmin.config.js');
 
-const publicData_db = require('./databases/realtime.rtdb.js').publicData_db;
-const messageRooms_db = require('./databases/realtime.rtdb.js').messageRooms_db;
+const publicData_db = require('./databases/realtime.db.js').publicData_db;
+const messageRooms_db = require('./databases/realtime.db.js').messageRooms_db;
 const profileImage = require('./storages/storage.gs.js').profileImage;
 const postImage = require('./storages/storage.gs.js').postImage;
 const messageImage = require('./storages/storage.gs.js').messageImage;
