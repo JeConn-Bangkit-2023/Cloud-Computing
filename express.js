@@ -1,10 +1,11 @@
-const { realtime, storage } = require('./config/firebaseAdmin.config.js');
+const { storage } = require('./config/firebaseAdmin.config.js');
 
 const publicData_db = require('./databases/realtime.db.js').publicData_db;
 const messageRooms_db = require('./databases/realtime.db.js').messageRooms_db;
-const profileImage = require('./storages/storage.gs.js').profileImage;
-const postImage = require('./storages/storage.gs.js').postImage;
-const messageImage = require('./storages/storage.gs.js').messageImage;
+
+const profileImage_folder = require('./storages/storagePath.gs.js').profileImage_folder;
+const postImage_folder = require('./storages/storagePath.gs.js').postImage_folder;
+const messageImage_folder = require('./storages/storagePath.gs.js').messageImage_folder;
 
 const express = require('express');
 const cors = require('cors');
@@ -92,7 +93,7 @@ app.post('/publicData/:username/jobInformation/imagesUrl', upload.single('image'
     }
 
     const timestamp = Date.now();
-    const imagePath = `post_image/${username}/${timestamp}-${imageFile.originalname}`;
+    const imagePath = `${postImage_folder}${username}/${timestamp}-${imageFile.originalname}`;
 
     const fileUpload = storage.file(imagePath);
     const blobStream = fileUpload.createWriteStream({
@@ -145,7 +146,7 @@ app.post('/messageRooms/:roomId/messages/:username', upload.single('image'), (re
     }
 
     const timestamp = Date.now();
-    const imagePath = `message_image/${roomId}/${timestamp}-${imageFile.originalname}`;
+    const imagePath = `${messageImage_folder}${roomId}/${timestamp}-${imageFile.originalname}`;
 
     const fileUpload = storage.file(imagePath);
     const blobStream = fileUpload.createWriteStream({
@@ -199,7 +200,7 @@ app.put('/publicData/updateProfileUser/:username', upload.single('profile_image'
     }
 
     const timestamp = Date.now();
-    const profileImagePath = `profile_image/${username}/${timestamp}-${profileImageFile.originalname}`;
+    const profileImagePath = `${profileImage_folder}${username}/${timestamp}-${profileImageFile.originalname}`;
 
     const fileUpload = storage.file(profileImagePath);
     const blobStream = fileUpload.createWriteStream({
