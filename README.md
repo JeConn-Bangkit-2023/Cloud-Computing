@@ -89,6 +89,8 @@ Endpoint to change the user's profile picture.
 
 
 
+---
+
 ## Endpoints Machine Learning
 
 ### GET /
